@@ -76,7 +76,7 @@ def get_residual(w, cd =  5932., cs =  3170., a=0.0127): # m/s, m/s, m
     second_term = lambda k: 4 * k**2 * p(k) * q(k) * jv(1, p(k)*a) * jv(0, q(k)*a)  
     third_term = lambda k:  ( 2 * k**2 - (w/cs)**2 )**2 * jv(0, p(k)*a) * jv(1, q(k)*a)  
 
-    return lambda k: first_term( k ) + second_term( k ) + third_term( k )
+    return lambda k: (first_term( k ) + second_term( k ) + third_term( k ))**2
 
 
 
@@ -87,11 +87,11 @@ print '\nExperimental Data...\n'
 text_data = np.loadtxt('CKB_Example.txt', skiprows=2).T
 b3 = text_data[:2, :]; b4 = text_data[0:3:2, :]
 
-b3 = volt_to_strain(b3, delta_t=1E-6); b4 = volt_to_strain(b4, delta_t=1E-6)
-b3_hat = to_freq(b3, 1E-6); b4_hat = to_freq(b4, 1E-6)
+b3 = volt_to_strain(b3, delta_t=5E-7); b4 = volt_to_strain(b4, delta_t=5.E-7)
+b3_hat = to_freq(b3, 5E-7); b4_hat = to_freq(b4, 5.E-7)
 
-print 'Channel B3:\n'; new_b3_hat = freq_shift(b3_hat, 0.61, 1500.+0.1j)
-print '\nChannel B4:\n'; new_b4_hat = freq_shift(b4_hat, -0.76, 2.)
+print 'Channel B3:\n'; new_b3_hat = freq_shift(b3_hat, 0.61, 1175.+0.1j)
+print '\nChannel B4:\n'; new_b4_hat = freq_shift(b4_hat, -0.76, 1175.+0.1j)
 new_b3 = np.real(to_time(b3, new_b3_hat)); new_b4 = np.real(to_time(b4, new_b4_hat))
 
 
