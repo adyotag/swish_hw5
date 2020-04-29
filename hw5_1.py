@@ -6,7 +6,6 @@ import numpy as np
 import cmath as cm
 import sys
 
-
 def terminal_size():
     import fcntl, termios, struct
     h, w, hp, wp = struct.unpack('HHHH',
@@ -15,10 +14,8 @@ def terminal_size():
     return w, h
 
 
-def volt_to_strain(data, UI=30., GF=2.04, delta_t=1e-6):
-    print data.shape
-    data = data[:,::int(delta_t/1e-8)]
-    print data.shape
+def volt_to_strain(data, UI=30., GF=2.04, delta_t=1e-6, starting_index=0):
+    data = data[:,starting_index::int(delta_t/1e-8)]
     strain = 2.*data[1,:]/(GF*UI) 
     return np.vstack([data[0,:], strain])
 
@@ -85,14 +82,43 @@ def get_residual(w, cd =  5932., cs =  3170., a=0.0127): # m/s, m/s, m
 # Data from Alex
 print '\nExperimental Data...\n'
 text_data = np.loadtxt('CKB_Example.txt', skiprows=2).T
-b3 = text_data[:2, :]; b4 = text_data[0:3:2, :]
 
-b3 = volt_to_strain(b3, delta_t=5E-7); b4 = volt_to_strain(b4, delta_t=5.E-7)
-b3_hat = to_freq(b3, 5E-7); b4_hat = to_freq(b4, 5.E-7)
 
-print 'Channel B3:\n'; new_b3_hat = freq_shift(b3_hat, 0.61, 1175.+0.1j)
-print '\nChannel B4:\n'; new_b4_hat = freq_shift(b4_hat, -0.76, 1175.+0.1j)
-new_b3 = np.real(to_time(b3, new_b3_hat)); new_b4 = np.real(to_time(b4, new_b4_hat))
+
+
+print 'Channel B3 and B4:\n';
+
+b3t = text_data[:2, :];
+b4t = text_data[0:3:2, :]
+
+full_new_b3 = np.asarray([])
+full_new_b4 = np.asarray([])
+
+
+for i in np.arange(0,50,25):
+    b3 = volt_to_strain(b3t, delta_t=5.E-7, starting_index=i); 
+    b3_hat = to_freq(b3, 5.E-7);
+    new_b3_hat = freq_shift(b3_hat, 0.61, 1175.+0.1j)
+    new_b3 = np.real(to_time(b3, new_b3_hat)); 
+    np.hstack([full_new_b3, new_b3])
+
+
+for i in np.arange(0,50,25):
+    b4 = volt_to_strain(b4t, delta_t=5.E-7, starting_index=i)
+    b4_hat = to_freq(b4, 5.E-7)
+    new_b4_hat = freq_shift(b4_hat, -0.76, 1175.+0.1j)
+    new_b4 = np.real(to_time(b4, new_b4_hat))
+    np.hstack([full_new_b4, new_b4])
+
+
+print full_new_b3
+print len(full_new_b3)
+
+print full_new_b4
+print len(full_new_b4)
+
+print 'B3: ', full_new_b3.shape
+print 'B4: ', full_new_b4.shape
 
 
 
