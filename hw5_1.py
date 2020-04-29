@@ -15,13 +15,8 @@ def terminal_size():
     return w, h
 
 
-def volt_to_strain(data, UI=30., GF=2.04 ):
-    strain = 2.*data[1,:]/(GF*UI) 
-    return np.vstack([data[0,:], strain])
-
-
 def generate_rect_pulse(delta_t=1e-8):
-    t = np.arange(0, 0.0006, delta_t); f = np.zeros(len(t));
+    t = np.arange(0, 0.006, delta_t); f = np.zeros(len(t));
     f[len(t)/2 - len(t)/4:len(t)/2 + len(t)/4] = 1.E-3
     return np.vstack([t, f])
 
@@ -87,60 +82,20 @@ def get_residual(w, cd =  5932., cs =  3170., a=0.0127): # m/s, m/s, m
 
 # Rectangular Pulse
 print '\nRectangular Pulse...\n'
-pulse = generate_rect_pulse(1.E-5)
-pulse_hat = to_freq(pulse, 1.E-5)
-
-new_pulse_hat = freq_shift(pulse_hat, 1., 500.+0j)
-
-
+pulse = generate_rect_pulse(delta_t=1.E-5)
+pulse_hat = to_freq(pulse, delta_t=1.E-5)
+new_pulse_hat = freq_shift(pulse_hat, dist=1., init_guess=500.+0j)
 new_pulse = np.real(to_time(pulse, new_pulse_hat))
-
-plt.show()
-
-
-
-"""
-# Data from Alex
-print '\nExperimental Data...\n'
-text_data = np.loadtxt('CKB_Example.txt', skiprows=2).T
-b3 = text_data[:2, :]; b4 = text_data[0:3:2, :]
-
-b3 = volt_to_strain(b3); b4 = volt_to_strain(b4)
-b3_hat = to_freq(b3, 1E-8); b4_hat = to_freq(b4, 1E-8)
-
-print 'Channel B3:\n'; new_b3_hat = freq_shift(b3_hat, 0.61, 2.)
-print '\nChannel B4:\n'; new_b4_hat = freq_shift(b4_hat, -0.76, 2.)
-new_b3 = np.real(to_time(b3, new_b3_hat)); new_b4 = np.real(to_time(b4, new_b4_hat))
-"""
-
 
 
 # Plots
 print '\n\nPlotting...\n'
 plt.figure()
 plt.plot(pulse[0,:], pulse[1,:], label='Original')
-plt.plot(new_pulse[0,:], new_pulse[1,:], label='Dispersion After 10 meter')
+plt.plot(new_pulse[0,:], new_pulse[1,:], label='Dispersion After 1 meter')
 plt.xlabel(r'Time, $t$'); plt.ylabel(r'Strain, $\epsilon$'); plt.legend()
 plt.title('Dispersion of a Rectangular Wave along a Cylindrical Rod')
 plt.show()
-
-"""
-plt.figure()
-plt.plot(b3[0,:], b3[1,:], label='Strain Gauge')
-plt.plot(new_b3[0,:], new_b3[1,:], label='Start of Sample')
-plt.xlabel(r'Time, $t$'); plt.ylabel(r'Strain, $\epsilon$'); plt.legend()
-plt.title('Strain Evolution at the Strain Gauge and at the Beginning of the Sample')
-
-plt.figure()
-plt.plot(b4[0,:], b4[1,:], label='Strain Gauge')
-plt.plot(new_b4[0,:], new_b4[1,:], label='End of Sample')
-plt.xlabel(r'Time, $t$'); plt.ylabel(r'Strain, $\epsilon$'); plt.legend()
-plt.title('Strain Evolution at the Strain Gauge and at the End of the Sample')
-
-plt.show()
-"""
-
-
 
 print 'Done !\n'
 #
