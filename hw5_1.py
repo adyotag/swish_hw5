@@ -1,9 +1,8 @@
 from matplotlib import pyplot as plt
-from scipy.optimize import root, fsolve, minimize, newton
+from scipy.optimize import root
 from scipy.special import jv
 from tqdm import tqdm
 import numpy as np
-import cmath as cm
 import sys
 
 def terminal_size():
@@ -79,7 +78,6 @@ def sort_things_out(data):
     return np.vstack([x_new,y_new])
 
 
-
 #######################################
 
 # Data from Alex
@@ -91,6 +89,7 @@ print 'Channel B3:\n';
 
 b3t = text_data[:2, :];
 b4t = text_data[0:3:2, :]
+
 
 full_new_b3 = []
 full_new_b4 = []
