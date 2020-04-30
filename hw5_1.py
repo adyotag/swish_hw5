@@ -16,7 +16,7 @@ def terminal_size():
 
 
 def generate_rect_pulse(delta_t=1e-8):
-    t = np.arange(0, 0.006, delta_t); f = np.zeros(len(t));
+    t = np.arange(0, 0.06, delta_t); f = np.zeros(len(t));
     f[len(t)/2 - len(t)/4:len(t)/2 + len(t)/4] = 1.E-3
     return np.vstack([t, f])
 
@@ -59,9 +59,6 @@ def to_time(orig_data, data):
 def ksi(w, init_guess):
     residual_handle = get_residual(np.real(w))
     soln = root(residual_handle, init_guess, method='anderson', options={'maxiter':1000} )
-    print '\nOMEGA = ', w
-    print '\nINIT GUESS = ', init_guess
-    print '\n', soln, '\n\n'
     return [soln.x, soln.success]
 
 
