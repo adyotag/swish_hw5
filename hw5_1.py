@@ -46,9 +46,6 @@ def freq_shift(data, dist=1., init_guess=1.+1.j):  # m
         fun_hist[i] = ksi_info[2]
         corrected[i] = np.exp(1j*ksi_hist[i]*dist)*f_hat_sorted[i]
 
-
-    plt.plot(fun_hist)
-
     return np.vstack([np.roll(frequencies_sorted, len(frequencies_sorted)//2), np.roll(corrected, len(corrected)//2)])
 
 
@@ -75,6 +72,12 @@ def get_residual(w, cd =  5932., cs =  3170., a=0.0127): # m/s, m/s, m
 
     return lambda k: (first_term( k ) + second_term( k ) + third_term( k ))**2
 
+def sort_things_out(data):
+    y = data[1,:]; x = data[0,:]
+    x_new = np.sort(x)
+    y_new = y[np.argsort(x)]
+    return np.vstack([x_new,y_new])
+
 
 
 #######################################
@@ -84,15 +87,13 @@ print '\nExperimental Data...\n'
 text_data = np.loadtxt('CKB_Example.txt', skiprows=2).T
 
 
-
-
-print 'Channel B3 and B4:\n';
+print 'Channel B3:\n';
 
 b3t = text_data[:2, :];
 b4t = text_data[0:3:2, :]
 
-full_new_b3 = np.asarray([])
-full_new_b4 = np.asarray([])
+full_new_b3 = []
+full_new_b4 = []
 
 
 for i in np.arange(0,50,25):
@@ -100,26 +101,27 @@ for i in np.arange(0,50,25):
     b3_hat = to_freq(b3, 5.E-7);
     new_b3_hat = freq_shift(b3_hat, 0.61, 1175.+0.1j)
     new_b3 = np.real(to_time(b3, new_b3_hat)); 
-    np.hstack([full_new_b3, new_b3])
+    full_new_b3.append(new_b3)
 
+
+print 'Channel B4:\n';
 
 for i in np.arange(0,50,25):
     b4 = volt_to_strain(b4t, delta_t=5.E-7, starting_index=i)
     b4_hat = to_freq(b4, 5.E-7)
     new_b4_hat = freq_shift(b4_hat, -0.76, 1175.+0.1j)
     new_b4 = np.real(to_time(b4, new_b4_hat))
-    np.hstack([full_new_b4, new_b4])
+    full_new_b4.append(new_b4)
+
+
+full_new_b3 = np.concatenate(full_new_b3, axis=1)
+full_new_b4 = np.concatenate(full_new_b4, axis=1)
+
+full_new_b3 = sort_things_out(full_new_b3)
+full_new_b4 = sort_things_out(full_new_b4)
 
 
 print full_new_b3
-print len(full_new_b3)
-
-print full_new_b4
-print len(full_new_b4)
-
-print 'B3: ', full_new_b3.shape
-print 'B4: ', full_new_b4.shape
-
 
 
 # Plots
@@ -127,13 +129,13 @@ print '\n\nPlotting...\n'
 
 plt.figure()
 plt.plot(b3[0,:], b3[1,:], label='Strain Gauge')
-plt.plot(new_b3[0,:], new_b3[1,:], label='Start of Sample')
-plt.xlabel(r'Time, $t$'); plt.ylabel(r'Strain, $\epsilon$'); plt.legend()
+plt.plot(full_new_b3[0,:], full_new_b3[1,:], label='Start of Sample')
+plt.xlabel(r'Time,$t$'); plt.ylabel(r'Strain, $\epsilon$'); plt.legend()
 plt.title('Strain Evolution at the Strain Gauge and at the Beginning of the Sample')
 
 plt.figure()
 plt.plot(b4[0,:], b4[1,:], label='Strain Gauge')
-plt.plot(new_b4[0,:], new_b4[1,:], label='End of Sample')
+plt.plot(full_new_b4[0,:], full_new_b4[1,:], label='End of Sample')
 plt.xlabel(r'Time, $t$'); plt.ylabel(r'Strain, $\epsilon$'); plt.legend()
 plt.title('Strain Evolution at the Strain Gauge and at the End of the Sample')
 plt.show()
